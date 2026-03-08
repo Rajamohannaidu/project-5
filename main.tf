@@ -61,7 +61,7 @@ resource "google_container_node_pool" "primary_nodes" {
     machine_type = "e2-small"   # smallest recommended for GKE nodes
     # Control disk type and size
     disk_type    = "pd-ssd"   # or "pd-standard" for HDD
-    disk_size_gb = 10         # smallest allowed size is 10 GB
+    disk_size_gb = 20       # smallest allowed size is 10 GB
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
