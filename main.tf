@@ -40,6 +40,7 @@ resource "google_compute_subnetwork" "main_subnet" {
 resource "google_container_cluster" "primary" {
   name     = "gke-cluster"
   location = "us-central1"   # regional cluster
+  deletion_protection = false
 
   network    = google_compute_network.main_vpc.self_link
   subnetwork = google_compute_subnetwork.main_subnet.self_link
@@ -58,6 +59,10 @@ resource "google_container_node_pool" "primary_nodes" {
 
   node_config {
     machine_type = "e2-small"   # smallest recommended for GKE nodes
+    # Control disk type and size
+    disk_type    = "pd-ssd"   # or "pd-standard" for HDD
+    disk_size_gb = 10         # smallest allowed size is 10 GB
+
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
