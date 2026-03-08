@@ -1,0 +1,8 @@
+# Ignore Terraform local state and provider binaries
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+terraform.tfvars
