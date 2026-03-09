@@ -36,19 +36,16 @@ resource "google_compute_subnetwork" "main_subnet" {
   network       = google_compute_network.main_vpc.self_link
 }
 
+
 # -------------------------
 # GKE Cluster
 # -------------------------
-
 resource "google_container_cluster" "primary" {
-  name     = "gke-cluster"
-  location = "us-central1-a" # Zonal cluster (cheaper)
-
-  deletion_protection = false
-
-  network    = google_compute_network.main_vpc.id
-  subnetwork = google_compute_subnetwork.main_subnet.id
-
+  name                     = "gke-cluster"
+  location                 = "us-central1" # Regional = HA across zones
+  deletion_protection      = false
+  network                  = google_compute_network.main_vpc.id
+  subnetwork               = google_compute_subnetwork.main_subnet.id
   remove_default_node_pool = true
   initial_node_count       = 1
 }
@@ -60,20 +57,39 @@ resource "google_container_cluster" "primary" {
 resource "google_container_node_pool" "primary_nodes" {
   name     = "primary-nodes"
   cluster  = google_container_cluster.primary.name
-  location = google_container_cluster.primary.location
+  location = google_container_cluster.primary.location # us-central1
 
+  # Regional clusters spread nodes across zones.
+  # node_count = per-zone count, so 1 × 3 zones = 3 total nodes.
+  # To limit to specific zones and control total node count, use node_locations.
   node_count = 1
 
+  node_locations = [
+    "us-central1-a",
+    "us-central1-b",
+    "us-central1-c",
+  ]
+
   node_config {
-
-    machine_type = "e2-micro"
-
-    disk_type    = "pd-standard"
-    disk_size_gb = 10
+    machine_type = "e2-small"
+    disk_type    = "pd-standard" # Avoids SSD_TOTAL_GB quota
+    disk_size_gb = 20
+    preemptible  = true # ~80% cheaper, fine for dev/test
 
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
     ]
+  }
+
+  # Optional: enable autoscaling instead of fixed node_count
+  autoscaling {
+    min_node_count = 1
+    max_node_count = 2
+  }
+
+  management {
+    auto_repair  = true
+    auto_upgrade = true
   }
 }
 
