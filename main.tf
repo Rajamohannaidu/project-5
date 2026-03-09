@@ -80,6 +80,10 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   reserved_peering_ranges = [google_compute_global_address.private_ip_range.name]
 
   depends_on = [google_project_service.service_networking]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # --- Cloud SQL Instance (HA / DR) ---
@@ -100,6 +104,7 @@ resource "google_sql_database_instance" "postgres_instance" {
   }
 
   depends_on = [google_service_networking_connection.private_vpc_connection]
+
 }
 
 resource "google_sql_database" "default_db" {
