@@ -42,7 +42,7 @@ resource "google_compute_subnetwork" "main_subnet" {
 
 resource "google_container_cluster" "primary" {
   name     = "gke-cluster"
-  location = "us-central1-a" # Zonal cluster (cheaper)
+  location = "us-central1" # Zonal cluster (cheaper)
 
   deletion_protection = false
 
@@ -50,7 +50,7 @@ resource "google_container_cluster" "primary" {
   subnetwork = google_compute_subnetwork.main_subnet.id
 
   remove_default_node_pool = true
-  initial_node_count       = 1
+  initial_node_count       = 3
 }
 
 # -------------------------
@@ -62,7 +62,7 @@ resource "google_container_node_pool" "primary_nodes" {
   cluster  = google_container_cluster.primary.name
   location = google_container_cluster.primary.location
 
-  node_count = 1
+  node_count = 3
 
   node_config {
 
